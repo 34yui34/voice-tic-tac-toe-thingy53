@@ -1,0 +1,7 @@
+#!/bin/bash
+
+west build -b thingy53/nrf5340/cpuapp
+sleep 2s
+west flash
+sleep 1s
+JLinkExe -device nRF5340_xxAA_APP -if SWD -speed 4000

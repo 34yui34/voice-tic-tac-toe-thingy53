@@ -10,4 +10,8 @@ project(tic-tac-toe-voice-recognition-thingy53)
 target_include_directories(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/include)
 
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/ssd1327_oled.c)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/table_image.c)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/cross_image.c)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/square_image.c)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/black_square_image.c)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/main.c)

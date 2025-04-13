@@ -62,7 +62,7 @@ int ssd1327_set_cursor(uint8_t column, uint8_t row) {
     
     /* Set column address */
     ret = ssd1327_write_cmd(SSD1327_CMD_SET_COLUMN_ADDRESS);
-    ret |= ssd1327_write_cmd(column);
+    ret |= ssd1327_write_cmd(column / 2);
     ret |= ssd1327_write_cmd(DISPLAY_WIDTH / 2 - 1);
     if (ret < 0) {
         return ret;
@@ -89,6 +89,33 @@ int ssd1327_clear(void) {
     memset(s_display_buffer, 0, sizeof(s_display_buffer));
     ret = ssd1327_write_data(s_display_buffer, sizeof(s_display_buffer) - 1);
     
+    return ret;
+}
+
+int ssd_1327_draw_image(const uint8_t *data, image_area_t area) {
+    int ret = 0;
+    
+    if (area.first_x >= DISPLAY_WIDTH ||
+        area.second_x >= DISPLAY_WIDTH ||
+        area.first_y >= DISPLAY_HEIGHT ||
+        area.second_y >= DISPLAY_HEIGHT)
+    {
+        LOG_ERR("Image area must not exceed display size");
+        return -1;
+    }
+    if (area.first_x >= area.second_x || area.first_y >= area.second_y) {
+        LOG_ERR("Expected that first point must be less than second point in the draw area");
+        return -1;
+    }
+
+    for (size_t i = 0; i < (area.second_y - area.first_y + 1); i++) {
+        ret = ssd1327_set_cursor(area.first_x, area.first_y + i);
+        if (ret < 0) {
+            return ret;
+        }
+        ret = ssd1327_write_data(&data[i * ((area.second_x - area.first_x + 1) / 2)], (area.second_x - area.first_x + 1) / 2);
+    }
+
     return ret;
 }
 

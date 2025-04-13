@@ -59,4 +59,6 @@ build/
 modules/
 tools/
 zephyr/
+images/
+venv/
 .DS_Store

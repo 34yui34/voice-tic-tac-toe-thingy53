@@ -62,6 +62,13 @@
 #define SSD1327_CONTROL_BYTE_CMD 0x00
 #define SSD1327_CONTROL_BYTE_DATA 0x40
 
+typedef struct {
+    uint8_t first_x;
+    uint8_t first_y;
+    uint8_t second_x;
+    uint8_t second_y;
+} image_area_t;
+
 /**
 * @brief Initialize SSD1327 display
 * 
@@ -85,6 +92,15 @@ int ssd1327_write_cmd(uint8_t cmd);
 * @return int 0 on success, negative errno on failure
 */
 int ssd1327_write_data(const uint8_t *data, size_t len);
+
+/**
+* @brief Draw image on SSD1327
+* 
+* @param data Data buffer
+* @param area Area to draw data
+* @return int 0 on success, negative errno on failure
+*/
+int ssd_1327_draw_image(const uint8_t *data, image_area_t area);
 
 /**
 * @brief Set cursor position
