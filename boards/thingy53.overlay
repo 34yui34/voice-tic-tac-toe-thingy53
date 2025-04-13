@@ -1,0 +1,32 @@
+/ {
+	pinctrl: pin-controller {
+		i2c0_default: i2c0_default {
+			group1 {
+				psels = <NRF_PSEL(TWIM_SDA, 0, 5)>,
+					<NRF_PSEL(TWIM_SCL, 0, 4)>;
+			};
+		};
+
+		i2c0_sleep: i2c0_sleep {
+			group1 {
+				psels = <NRF_PSEL(TWIM_SDA, 0, 5)>,
+					<NRF_PSEL(TWIM_SCL, 0, 4)>;
+				low-power-enable;
+			};
+		};
+	};
+};
+
+&i2c0 {
+    compatible = "nordic,nrf-twim";
+    status = "okay";
+    clock-frequency = <I2C_BITRATE_FAST>;
+
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
+    ssd1327: ssd1327@3d {
+        compatible = "ssd1327";
+        reg = <0x3d>;
+    };
+};
