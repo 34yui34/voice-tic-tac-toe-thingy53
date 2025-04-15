@@ -335,18 +335,18 @@ LOG_MODULE_REGISTER(dmic_sample);
 #define SAMPLE_BIT_WIDTH 16
 #define BYTES_PER_SAMPLE sizeof(int16_t)
 /* Milliseconds to wait for a block to be read. */
-#define READ_TIMEOUT     3000
+#define READ_TIMEOUT     1000
 
 /* Size of a block for 100 ms of audio data. */
 #define BLOCK_SIZE(_sample_rate, _number_of_channels) \
-    (BYTES_PER_SAMPLE * (_sample_rate * 2 / 1) * _number_of_channels)
+    (BYTES_PER_SAMPLE * (_sample_rate / 10) * _number_of_channels)
 
 /* Driver will allocate blocks from this slab to receive audio data into them.
 * Application, after getting a given block from the driver and processing its
 * data, needs to free that block.
 */
 #define MAX_BLOCK_SIZE   BLOCK_SIZE(MAX_SAMPLE_RATE, 1)
-#define BLOCK_COUNT      3
+#define BLOCK_COUNT      4
 K_MEM_SLAB_DEFINE_STATIC(mem_slab, MAX_BLOCK_SIZE, BLOCK_COUNT, 1);
 
 /* The devicetree node identifier for the "led0" alias. */
@@ -354,10 +354,11 @@ K_MEM_SLAB_DEFINE_STATIC(mem_slab, MAX_BLOCK_SIZE, BLOCK_COUNT, 1);
 
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
-static float features[32000] = {
+static float features[16000] = {
     // copy raw features here (for example from the 'Live classification' page)
     // see https://docs.edgeimpulse.com/docs/running-your-impulse-locally-zephyr
 };
+static uint64_t current_window = 0;
 
 int raw_feature_get_data(size_t offset, size_t length, float *out_ptr) {
     memcpy(out_ptr, features + offset, length * sizeof(float));
@@ -433,7 +434,7 @@ int main() {
     ei_impulse_result_t result = { 0 };
 
     while (1) {
-        gpio_pin_set_dt(&led, 1);
+        // gpio_pin_set_dt(&led, 1);
 
         ret = dmic_configure(dmic_dev, &cfg);
         if (ret < 0) {
@@ -447,23 +448,36 @@ int main() {
             return ret;
         }
 
-        void *buffer;
-        uint32_t size;
+        gpio_pin_set_dt(&led, 1);
+        while (current_window < 10) {   
+            void *buffer;
+            uint32_t size;
 
-        ret = dmic_read(dmic_dev, 0, &buffer, &size, READ_TIMEOUT);
-        if (ret < 0) {
-            LOG_ERR("- read failed: %d", ret);
-            return ret;
+            ret = dmic_read(dmic_dev, 0, &buffer, &size, READ_TIMEOUT);
+            if (ret < 0) {
+                LOG_ERR("- read failed: %d", ret);
+                return ret;
+            }
+            // calculate_rms(buffer, size / sizeof(int16_t));
+
+            LOG_INF("- got buffer %p of %u bytes", buffer, size);
+            int16_t * i16_buf = (int16_t *)buffer;
+            if (current_window < 10) {
+                for (size_t i = 0; i < (size/2); i++) {
+                    features[(current_window * size/2) + i] = i16_buf[i];
+                }
+            }
+            else {
+                memmove(&features[0], &features[size/2], 9 * (size/2) * sizeof(float));
+                for (size_t i = 0; i < (size/2); i++) {
+                    features[(9 * size/2) + i] = i16_buf[i];
+                }
+            }
+
+            k_mem_slab_free(&mem_slab, buffer);
+            current_window++;
         }
-        // calculate_rms(buffer, size / sizeof(int16_t));
-
-        LOG_INF("- got buffer %p of %u bytes", buffer, size);
-        int16_t * i16_buf = (int16_t *)buffer;
-        for (size_t i = 0; i < 32000; i++) {
-            features[i] = i16_buf[i];
-        }
-
-        k_mem_slab_free(&mem_slab, buffer);
+        gpio_pin_set_dt(&led, 0);
 
         ret = dmic_trigger(dmic_dev, DMIC_TRIGGER_STOP);
         if (ret < 0) {
@@ -471,42 +485,61 @@ int main() {
             return ret;
         }
 
-        gpio_pin_set_dt(&led, 0);
+        current_window = 0;
 
-        // the features are stored into flash, and we don't want to load everything into RAM
-        signal_t features_signal;
-        features_signal.total_length = sizeof(features) / sizeof(features[0]);
-        features_signal.get_data = &raw_feature_get_data;
+        // gpio_pin_set_dt(&led, 0);
 
-        // invoke the impulse
-        EI_IMPULSE_ERROR res = run_classifier(&features_signal, &result, false);
-        printk("run_classifier returned: %d\n", res);
+            // the features are stored into flash, and we don't want to load everything into RAM
+            signal_t features_signal;
+            features_signal.total_length = sizeof(features) / sizeof(features[0]);
+            features_signal.get_data = &raw_feature_get_data;
 
-        if (res != 0) return 1;
+            // invoke the impulse
+            EI_IMPULSE_ERROR res = run_classifier(&features_signal, &result, false);
+            printk("run_classifier returned: %d\n", res);
 
-        printk("Predictions (DSP: %d ms., Classification: %d ms., Anomaly: %d ms.): \n",
-                result.timing.dsp, result.timing.classification, result.timing.anomaly);
-#if EI_CLASSIFIER_OBJECT_DETECTION == 1
-        bool bb_found = result.bounding_boxes[0].value > 0;
-        for (size_t ix = 0; ix < result.bounding_boxes_count; ix++) {
-            auto bb = result.bounding_boxes[ix];
-            if (bb.value == 0) {
-                continue;
+            if (res != 0) return 1;
+
+            for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
+                printk("    %s: %.5f\n", result.classification[ix].label,
+                                        result.classification[ix].value);
             }
-            printk("    %s (%f) [ x: %u, y: %u, width: %u, height: %u ]\n", bb.label, bb.value, bb.x, bb.y, bb.width, bb.height);
-        }
-        if (!bb_found) {
-            printk("    No objects found\n");
-        }
-#else
-        for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
-            printk("    %s: %.5f\n", result.classification[ix].label,
-                                    result.classification[ix].value);
-        }
-#if EI_CLASSIFIER_HAS_ANOMALY == 1
-        printk("    anomaly score: %.3f\n", result.anomaly);
-#endif
-#endif
-        k_msleep(2000);
+            // if (result.classification[0].value > 0.5F && result.classification[1].value < 0.2F && result.classification[2].value < 0.2F) {
+            //     printk("%s detected at value %.5f!\n", result.classification[0].label, result.classification[0].value);
+            // }
+            // else if (result.classification[1].value > 0.5F && result.classification[0].value < 0.2F && result.classification[2].value < 0.2F) {
+            //     printk("%s detected at value %.5f!\n", result.classification[1].label, result.classification[1].value);
+            // }
+            // else if (result.classification[2].value > 0.5F && result.classification[0].value < 0.2F && result.classification[1].value < 0.2F) {
+            //     printk("%s detected at value %.5f!\n", result.classification[2].label, result.classification[2].value);
+            // }
+            // else {
+            //     printk("None detected!\n");
+            // }
+
+//             printk("Predictions (DSP: %d ms., Classification: %d ms., Anomaly: %d ms.): \n",
+//                     result.timing.dsp, result.timing.classification, result.timing.anomaly);
+// #if EI_CLASSIFIER_OBJECT_DETECTION == 1
+//             bool bb_found = result.bounding_boxes[0].value > 0;
+//             for (size_t ix = 0; ix < result.bounding_boxes_count; ix++) {
+//                 auto bb = result.bounding_boxes[ix];
+//                 if (bb.value == 0) {
+//                     continue;
+//                 }
+//                 printk("    %s (%f) [ x: %u, y: %u, width: %u, height: %u ]\n", bb.label, bb.value, bb.x, bb.y, bb.width, bb.height);
+//             }
+//             if (!bb_found) {
+//                 printk("    No objects found\n");
+//             }
+// #else
+//             for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
+//                 printk("    %s: %.5f\n", result.classification[ix].label,
+//                                         result.classification[ix].value);
+//             }
+// #if EI_CLASSIFIER_HAS_ANOMALY == 1
+//             printk("    anomaly score: %.3f\n", result.anomaly);
+// #endif
+// #endif
+            k_msleep(5000);
     }
 }

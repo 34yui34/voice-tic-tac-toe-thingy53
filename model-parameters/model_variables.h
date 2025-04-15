@@ -46,7 +46,7 @@
 #include "edge-impulse-sdk/classifier/ei_model_types.h"
 #include "edge-impulse-sdk/classifier/inferencing_engines/engines.h"
 
-const char* ei_classifier_inferencing_categories[] = { "oneone", "onethree", "onetwo" };
+const char* ei_classifier_inferencing_categories[] = { "noise", "oneone", "onethree", "onetwo", "threeone", "threethree", "threetwo", "twoone", "twothree", "twotwo" };
 
 ei_dsp_named_axis_t ei_dsp_config_2_named_axes[] = {
     { .name = "Signal", .axis = 0 }
@@ -76,7 +76,7 @@ const uint8_t ei_dsp_blocks_size = 1;
 ei_model_dsp_t ei_dsp_blocks[ei_dsp_blocks_size] = {
     { // DSP block 2
         2,
-        1300, // output size
+        650, // output size
         &extract_mfcc_features, // DSP function pointer
         (void*)&ei_dsp_config_2, // pointer to config struct
         ei_dsp_config_2_axes, // array of offsets into the input stream, one for each axis
@@ -121,7 +121,7 @@ const ei_learning_block_t ei_learning_blocks[ei_learning_blocks_size] = {
         EI_CLASSIFIER_IMAGE_SCALING_NONE,
         ei_learning_block_3_inputs,
         ei_learning_block_3_inputs_size,
-        3
+        10
     },
 };
 
@@ -133,18 +133,18 @@ const ei_object_detection_nms_config_t ei_object_detection_nms = {
     0.2f  /* NMS IOU threshold */
 };
 
-const ei_impulse_t impulse_665731_0 = {
-    .project_id = 665731,
+const ei_impulse_t impulse_672382_0 = {
+    .project_id = 672382,
     .project_owner = "34yui34",
-    .project_name = "emb-sys-final-project",
+    .project_name = "tic-tac-toe-voice-recognition-thai",
     .impulse_id = 1,
     .impulse_name = "Impulse #1",
-    .deploy_version = 1,
+    .deploy_version = 3,
 
-    .nn_input_frame_size = 1300,
-    .raw_sample_count = 32000,
+    .nn_input_frame_size = 650,
+    .raw_sample_count = 16000,
     .raw_samples_per_frame = 1,
-    .dsp_input_frame_size = 32000 * 1,
+    .dsp_input_frame_size = 16000 * 1,
     .input_width = 0,
     .input_height = 0,
     .input_frames = 0,
@@ -160,7 +160,7 @@ const ei_impulse_t impulse_665731_0 = {
     .visual_ad_grid_size_x = 0,
     .visual_ad_grid_size_y = 0,
     
-    .tflite_output_features_count = 3,
+    .tflite_output_features_count = 10,
     .learning_blocks_size = ei_learning_blocks_size,
     .learning_blocks = ei_learning_blocks,
 
@@ -171,16 +171,16 @@ const ei_impulse_t impulse_665731_0 = {
 
     .sensor = EI_CLASSIFIER_SENSOR_MICROPHONE,
     .fusion_string = "audio",
-    .slice_size = (32000/4),
+    .slice_size = (16000/4),
     .slices_per_model_window = 4,
 
     .has_anomaly = EI_ANOMALY_TYPE_UNKNOWN,
-    .label_count = 3,
+    .label_count = 10,
     .categories = ei_classifier_inferencing_categories,
     .object_detection_nms = ei_object_detection_nms
 };
 
-ei_impulse_handle_t impulse_handle_665731_0 = ei_impulse_handle_t( &impulse_665731_0 );
-ei_impulse_handle_t& ei_default_impulse = impulse_handle_665731_0;
+ei_impulse_handle_t impulse_handle_672382_0 = ei_impulse_handle_t( &impulse_672382_0 );
+ei_impulse_handle_t& ei_default_impulse = impulse_handle_672382_0;
 
 #endif // _EI_CLASSIFIER_MODEL_VARIABLES_H_

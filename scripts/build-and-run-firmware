@@ -1,6 +1,6 @@
 #!/bin/bash
 
-west build -b thingy53/nrf5340/cpuapp
+west build -p -c -b thingy53/nrf5340/cpuapp
 sleep 2s
 west flash
 sleep 1s
