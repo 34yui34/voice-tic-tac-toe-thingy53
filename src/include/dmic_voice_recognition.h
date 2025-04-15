@@ -22,13 +22,37 @@
  * SOFTWARE.
  */
 
-#ifndef SQUARE_IMAGE_H
-#define SQUARE_IMAGE_H
+#ifndef DMIC_VOICE_RECOGNITION_H
+#define DMIC_VOICE_RECOGNITION_H
 
-#define SQUARE_IMAGE_WIDTH 30
-#define SQUARE_IMAGE_HEIGHT 30
-#define PIXEL_PER_BYTE 2
+typedef enum {
+    ONE_ONE_DETECTED,
+    ONE_TWO_DETECTED,
+    ONE_THREE_DETECTED,
+    TWO_ONE_DETECTED,
+    TWO_TWO_DETECTED,
+    TWO_THREE_DETECTED,
+    THREE_ONE_DETECTED,
+    THREE_TWO_DETECTED,
+    THREE_THREE_DETECTED,
+    RESET_DETECTED,
+    NOISE_DETECTED,
+    NONE_DETECTED,
+} voice_classification_label_t;
 
-extern const unsigned char square_image[(SQUARE_IMAGE_WIDTH * SQUARE_IMAGE_HEIGHT) / PIXEL_PER_BYTE];
+/**
+* @brief Initialize DMIC module for voice recognition
+* 
+* @return int 0 on success, negative errno on failure
+*/
+int dmic_voice_recognition_init(void);
 
-#endif /* SQUARE_IMAGE_H */
+/**
+* @brief Initialize DMIC module for voice recognition
+* @param classification_result - Pointer to store classification result 
+*
+* @return int 0 on success, negative errno on failure
+*/
+int dmic_voice_recognition_sample_and_classify(voice_classification_label_t * classification_result);
+
+#endif /* DMIC_VOICE_RECOGNITION_H */

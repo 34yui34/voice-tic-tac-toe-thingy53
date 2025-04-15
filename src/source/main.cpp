@@ -313,6 +313,7 @@ int main(void)
 }
 #endif
 
+#if 0
 // Zephyr 3.1.x and newer uses different include scheme
 #include <version.h>
 #if (KERNEL_VERSION_MAJOR > 3) || ((KERNEL_VERSION_MAJOR == 3) && (KERNEL_VERSION_MINOR >= 1))
@@ -541,5 +542,93 @@ int main() {
 // #endif
 // #endif
             k_msleep(5000);
+    }
+}
+#endif
+
+#include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/gpio.h>
+#include <zephyr/sys/printk.h>
+
+#include "dmic_voice_recognition.h"
+
+/* Button definitions for Thingy:53 - use the appropriate GPIO pins */
+#define BUTTON1_NODE DT_ALIAS(sw0)
+/* The devicetree node identifier for the "led0" alias. */
+#define LED0_NODE DT_ALIAS(led0)
+
+static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+static struct gpio_callback button1_cb_data;
+
+/* Create a semaphore to signal button presses */
+K_SEM_DEFINE(button_sem, 0, 1);
+
+/* Button interrupt handler */
+void button_pressed_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
+{
+    /* Signal the main thread that a button was pressed */
+    k_sem_give(&button_sem);
+}
+
+int main(void)
+{
+    /* Get button device pointers */
+    const struct gpio_dt_spec button1 = GPIO_DT_SPEC_GET(BUTTON1_NODE, gpios);
+    
+    int ret;
+
+    if (!gpio_is_ready_dt(&led)) {
+        return 0;
+    }
+
+    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
+    if (ret < 0) {
+        return 0;
+    }
+    gpio_pin_set_dt(&led, 0);
+
+    /* Check if devices are ready */
+    if (!device_is_ready(button1.port)) {
+        printk("Button1 device not ready\n");
+        return -1;
+    }
+
+    /* Configure buttons as inputs with pull-up and interrupt on falling edge */
+    ret = gpio_pin_configure_dt(&button1, GPIO_INPUT | GPIO_PULL_UP);
+    if (ret != 0) {
+        printk("Error configuring button 1: %d\n", ret);
+        return -1;
+    }
+
+    /* Configure interrupts */
+    ret = gpio_pin_interrupt_configure_dt(&button1, GPIO_INT_EDGE_TO_ACTIVE);
+    if (ret != 0) {
+        printk("Error configuring button 1 interrupt: %d\n", ret);
+        return -1;
+    }
+
+    /* Initialize callbacks */
+    gpio_init_callback(&button1_cb_data, button_pressed_callback, BIT(button1.pin));
+
+    /* Add callbacks */
+    gpio_add_callback(button1.port, &button1_cb_data);
+
+    ret = dmic_voice_recognition_init();
+    if (ret != 0) {
+        printk("Error init DMIC\n");
+        return -1;
+    }
+
+    voice_classification_label_t classification_label;
+    /* Main loop - can do other tasks here */
+    while (1) {
+        /* Wait for a button press */
+        k_sem_take(&button_sem, K_FOREVER);
+        printk("Button1 pressed\n");
+        k_sleep(K_MSEC(200));
+        gpio_pin_set_dt(&led, 1);
+        dmic_voice_recognition_sample_and_classify(&classification_label);
+        gpio_pin_set_dt(&led, 0);
     }
 }
