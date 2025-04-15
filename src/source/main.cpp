@@ -22,7 +22,6 @@
  * SOFTWARE.
  */
 
-#if 0
 #include <string.h>
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
@@ -31,7 +30,7 @@
 #include <zephyr/logging/log.h>
 
 #include "table_image.h"
-#include "square_image.h"
+#include "circle_image.h"
 #include "black_square_image.h"
 #include "cross_image.h"
 #include "ssd1327_oled.h"
@@ -64,15 +63,15 @@ int draw_test_pattern(void) {
     ret = ssd1327_write_data(table_image, sizeof(table_image));
 
     /* Fill out all the grids */
-    ret = ssd_1327_draw_image(square_image, one_one_grid_area);
-    ret = ssd_1327_draw_image(square_image, one_two_grid_area);
-    ret = ssd_1327_draw_image(square_image, one_three_grid_area);
-    ret = ssd_1327_draw_image(square_image, two_one_grid_area);
-    ret = ssd_1327_draw_image(square_image, two_two_grid_area);
-    ret = ssd_1327_draw_image(square_image, two_three_grid_area);
-    ret = ssd_1327_draw_image(square_image, three_one_grid_area);
-    ret = ssd_1327_draw_image(square_image, three_two_grid_area);
-    ret = ssd_1327_draw_image(square_image, three_three_grid_area);
+    ret = ssd_1327_draw_image(circle_image, one_one_grid_area);
+    ret = ssd_1327_draw_image(cross_image, one_two_grid_area);
+    ret = ssd_1327_draw_image(circle_image, one_three_grid_area);
+    ret = ssd_1327_draw_image(cross_image, two_one_grid_area);
+    ret = ssd_1327_draw_image(circle_image, two_two_grid_area);
+    ret = ssd_1327_draw_image(cross_image, two_three_grid_area);
+    ret = ssd_1327_draw_image(circle_image, three_one_grid_area);
+    ret = ssd_1327_draw_image(cross_image, three_two_grid_area);
+    ret = ssd_1327_draw_image(circle_image, three_three_grid_area);
     if (ret != 0) {
         LOG_ERR("draw image error!");
     }
@@ -116,6 +115,7 @@ int main(void) {
     return 0;
 }
 
+#if 0
 /*
  * Copyright (c) 2021 Nordic Semiconductor ASA
  *
@@ -544,7 +544,6 @@ int main() {
             k_msleep(5000);
     }
 }
-#endif
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
@@ -632,3 +631,4 @@ int main(void)
         gpio_pin_set_dt(&led, 0);
     }
 }
+#endif

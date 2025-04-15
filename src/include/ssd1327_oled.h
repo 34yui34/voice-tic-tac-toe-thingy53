@@ -25,6 +25,10 @@
 #ifndef SSD1327_OLED_H
 #define SSD1327_OLED_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -117,5 +121,9 @@ int ssd1327_set_cursor(uint8_t column, uint8_t row);
 * @return int 0 on success, negative errno on failure
 */
 int ssd1327_clear(void);
+
+#ifdef __cplusplus
+}  /* End of extern "C" block */
+#endif
 
 #endif /* SSD1327_OLED_H */

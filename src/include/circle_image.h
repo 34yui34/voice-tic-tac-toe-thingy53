@@ -22,13 +22,21 @@
  * SOFTWARE.
  */
 
-#ifndef SQUARE_IMAGE_H
-#define SQUARE_IMAGE_H
+#ifndef CIRCLE_IMAGE_H
+#define CIRCLE_IMAGE_H
 
-#define SQUARE_IMAGE_WIDTH 30
-#define SQUARE_IMAGE_HEIGHT 30
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define CIRCLE_IMAGE_WIDTH 30
+#define CIRCLE_IMAGE_HEIGHT 30
 #define PIXEL_PER_BYTE 2
 
-extern const unsigned char square_image[(SQUARE_IMAGE_WIDTH * SQUARE_IMAGE_HEIGHT) / PIXEL_PER_BYTE];
+extern const unsigned char circle_image[(CIRCLE_IMAGE_WIDTH * CIRCLE_IMAGE_HEIGHT) / PIXEL_PER_BYTE];
 
-#endif /* SQUARE_IMAGE_H */
+#ifdef __cplusplus
+}  /* End of extern "C" block */
+#endif
+
+#endif /* CIRCLE_IMAGE_H */

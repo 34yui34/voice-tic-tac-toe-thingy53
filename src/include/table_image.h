@@ -25,10 +25,18 @@
 #ifndef TABLE_IMAGE_H
 #define TABLE_IMAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define TABLE_IMAGE_WIDTH 128
 #define TABLE_IMAGE_HEIGHT 128
 #define PIXEL_PER_BYTE 2
 
 extern const unsigned char table_image[(TABLE_IMAGE_WIDTH * TABLE_IMAGE_HEIGHT) / PIXEL_PER_BYTE];
+
+#ifdef __cplusplus
+}  /* End of extern "C" block */
+#endif
 
 #endif /* TABLE_IMAGE_H */

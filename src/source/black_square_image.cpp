@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
- #include "black_square_image.h"
+#include "black_square_image.h"
 
 const unsigned char black_square_image[(BLACK_SQUARE_IMAGE_WIDTH * BLACK_SQUARE_IMAGE_HEIGHT) / PIXEL_PER_BYTE] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 

@@ -25,10 +25,18 @@
 #ifndef CROSS_IMAGE_H
 #define CROSS_IMAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define CROSS_IMAGE_WIDTH 30
 #define CROSS_IMAGE_HEIGHT 30
 #define PIXEL_PER_BYTE 2
 
 extern const unsigned char cross_image[(CROSS_IMAGE_WIDTH * CROSS_IMAGE_HEIGHT) / PIXEL_PER_BYTE];
+
+#ifdef __cplusplus
+}  /* End of extern "C" block */
+#endif
 
 #endif /* CROSS_IMAGE_H */

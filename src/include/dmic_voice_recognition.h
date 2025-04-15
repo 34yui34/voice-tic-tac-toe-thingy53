@@ -25,6 +25,10 @@
 #ifndef DMIC_VOICE_RECOGNITION_H
 #define DMIC_VOICE_RECOGNITION_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef enum {
     ONE_ONE_DETECTED,
     ONE_TWO_DETECTED,
@@ -54,5 +58,9 @@ int dmic_voice_recognition_init(void);
 * @return int 0 on success, negative errno on failure
 */
 int dmic_voice_recognition_sample_and_classify(voice_classification_label_t * classification_result);
+
+#ifdef __cplusplus
+}  /* End of extern "C" block */
+#endif
 
 #endif /* DMIC_VOICE_RECOGNITION_H */

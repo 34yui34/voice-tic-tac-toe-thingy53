@@ -41,7 +41,7 @@ int ssd1327_write_cmd(uint8_t cmd) {
 }
 
 int ssd1327_write_data(const uint8_t *data, size_t len) {
-    uint8_t *buf = k_malloc(len + 1);
+    uint8_t *buf = (uint8_t *)k_malloc(len + 1);
     int ret;
     
     if (!buf) {
