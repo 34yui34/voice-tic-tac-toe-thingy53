@@ -41,13 +41,13 @@
 /* Button definitions for Thingy:53 - use the appropriate GPIO pins */
 #define BUTTON1_NODE DT_ALIAS(sw0)
 /* The devicetree node identifier for the "led0" alias. */
-#define LED0_NODE DT_ALIAS(led0)
-#define LED1_NODE DT_ALIAS(led1)
-#define LED2_NODE DT_ALIAS(led2)
+#define RED_LED_NODE DT_ALIAS(led0)
+#define GREEN_LED_NODE DT_ALIAS(led1)
+#define BLUE_LED_NODE DT_ALIAS(led2)
 
-static const struct gpio_dt_spec led0 = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
-static const struct gpio_dt_spec led1 = GPIO_DT_SPEC_GET(LED1_NODE, gpios);
-static const struct gpio_dt_spec led2 = GPIO_DT_SPEC_GET(LED2_NODE, gpios);
+static const struct gpio_dt_spec red_led = GPIO_DT_SPEC_GET(RED_LED_NODE, gpios);
+static const struct gpio_dt_spec green_led = GPIO_DT_SPEC_GET(GREEN_LED_NODE, gpios);
+static const struct gpio_dt_spec blue_led = GPIO_DT_SPEC_GET(BLUE_LED_NODE, gpios);
 static struct gpio_callback button1_cb_data;
 
 /* Create a semaphore to signal button presses */
@@ -409,35 +409,35 @@ int main(void)
     
     int ret;
 
-    /* Config led0 */
-    if (!gpio_is_ready_dt(&led0)) {
+    /* Config red_led */
+    if (!gpio_is_ready_dt(&red_led)) {
         return 0;
     }
-    ret = gpio_pin_configure_dt(&led0, GPIO_OUTPUT_ACTIVE);
+    ret = gpio_pin_configure_dt(&red_led, GPIO_OUTPUT_ACTIVE);
     if (ret < 0) {
         return 0;
     }
-    gpio_pin_set_dt(&led0, 0);
+    gpio_pin_set_dt(&red_led, 0);
 
-    /* Config led1 */
-    if (!gpio_is_ready_dt(&led1)) {
+    /* Config green_led */
+    if (!gpio_is_ready_dt(&green_led)) {
         return 0;
     }
-    ret = gpio_pin_configure_dt(&led1, GPIO_OUTPUT_ACTIVE);
+    ret = gpio_pin_configure_dt(&green_led, GPIO_OUTPUT_ACTIVE);
     if (ret < 0) {
         return 0;
     }
-    gpio_pin_set_dt(&led1, 0);
+    gpio_pin_set_dt(&green_led, 0);
 
-    /* Config led2 */
-    if (!gpio_is_ready_dt(&led2)) {
+    /* Config blue_led */
+    if (!gpio_is_ready_dt(&blue_led)) {
         return 0;
     }
-    ret = gpio_pin_configure_dt(&led2, GPIO_OUTPUT_ACTIVE);
+    ret = gpio_pin_configure_dt(&blue_led, GPIO_OUTPUT_ACTIVE);
     if (ret < 0) {
         return 0;
     }
-    gpio_pin_set_dt(&led2, 0);
+    gpio_pin_set_dt(&blue_led, 0);
 
     /* Check if devices are ready */
     if (!device_is_ready(button1.port)) {
@@ -506,10 +506,10 @@ int main(void)
             }
 
             case SAMPLING: {
-                gpio_pin_set_dt(&led0, 1);
+                gpio_pin_set_dt(&blue_led, 1);
                 k_sleep(K_MSEC(200));
                 dmic_voice_recognition_sample_and_classify(&voice_recognition_result);
-                gpio_pin_set_dt(&led0, 0);
+                gpio_pin_set_dt(&blue_led, 0);
                 if (is_sample_result_valid(voice_recognition_result)) {
                     game_state = CONFIRMATION;
                 }
@@ -527,14 +527,14 @@ int main(void)
                 while (!break_loop) {
                     if (voice_recognition_result == RESET_DETECTED) {
                         /* Show RESET confirmation (maybe led?) */
-                        gpio_pin_set_dt(&led2, 1);
+                        gpio_pin_set_dt(&green_led, 1);
                         if (k_sem_take(&button_sem, K_MSEC(500)) == 0) {
                             /* Button is pressed during this time */
                             game_state = RESET;
                             break_loop = true;
                             continue;
                         }
-                        gpio_pin_set_dt(&led2, 0);
+                        gpio_pin_set_dt(&green_led, 0);
                         if (k_sem_take(&button_sem, K_MSEC(500)) == 0) {
                             /* Button is pressed during this time */
                             game_state = RESET;
@@ -551,10 +551,10 @@ int main(void)
                     else {
                         /* Show the cell location and display led */
                         image_area_t cell_area = get_cell_area_from_class_label(voice_recognition_result);
-                        gpio_pin_set_dt(&led2, 1);
+                        gpio_pin_set_dt(&green_led, 1);
                         ssd_1327_draw_image(cross_image, cell_area);
                         if (k_sem_take(&button_sem, K_MSEC(500)) == 0) {
-                            gpio_pin_set_dt(&led2, 0);
+                            gpio_pin_set_dt(&green_led, 0);
                             break_loop = true;
                             /* Button is pressed during this time */
                             uint8_t col, row;
@@ -580,10 +580,10 @@ int main(void)
                             k_sem_reset(&button_sem);
                             continue;
                         }
-                        gpio_pin_set_dt(&led2, 0);
+                        gpio_pin_set_dt(&green_led, 0);
                         ssd_1327_draw_image(black_square_image, cell_area);
                         if (k_sem_take(&button_sem, K_MSEC(500)) == 0) {
-                            gpio_pin_set_dt(&led2, 0);
+                            gpio_pin_set_dt(&green_led, 0);
                             break_loop = true;
                             /* Button is pressed during this time */
                             uint8_t col, row;
@@ -651,9 +651,9 @@ int main(void)
 
             case SAMPLE_NOK: {
                 for (size_t i = 0; i < 2; i++) {
-                    gpio_pin_set_dt(&led1, 1);
+                    gpio_pin_set_dt(&red_led, 1);
                     k_msleep(500);
-                    gpio_pin_set_dt(&led1, 0);
+                    gpio_pin_set_dt(&red_led, 0);
                     k_msleep(500);
                 }
                 k_sem_reset(&button_sem);
