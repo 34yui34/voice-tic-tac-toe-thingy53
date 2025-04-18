@@ -34,6 +34,8 @@ target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/table_image.cp
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/cross_image.cpp)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/circle_image.cpp)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/black_square_image.cpp)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/cpu_win_text_image.cpp)
+target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/you_win_text_image.cpp)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tflite-model/tflite_learn_3_compiled.cpp)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/dmic_voice_recognition.cpp)
 target_sources(app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/source/main.cpp)
