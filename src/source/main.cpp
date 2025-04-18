@@ -611,8 +611,9 @@ int main(void)
                         }
                         loop_cnt++;
                         if (loop_cnt == 5) {
-                            game_state = SAMPLE_NOK;
+                            game_state = IDLE;
                             break_loop = true;
+                            k_sem_reset(&button_sem);
                             continue;
                         }
                     }
